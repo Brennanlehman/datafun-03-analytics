@@ -8,34 +8,22 @@ import csv
 import pathlib 
 from io import StringIO
 from pathlib import Path
+import io
 
 # External import
-import requests  
+import requests 
+import pandas as pd
 
 # Import local modules
 import start_project
 import lehman_utils
 
 
-# Function to fetch and write text data
+# Data acquisition - text data
 def fetch_and_write_txt_data(folder_name, filename, url):
     response = requests.get(url)
     if response.status_code == 200:
         write_txt_file(folder_name, filename, response.text)
-    else:
-        print(f"Failed to fetch data: {response.status_code}")
-
-#function to process the text file creating resuls file
-def process_txt_file(folder_name, input_filename, output_filename):
-    # Fetch the data
-    txt_url = 'https://www.gutenberg.org/ebooks/1112.txt.utf-8'
-    response = requests.get(txt_url)
-    
-    if response.status_code == 200:
-        data = response.text
-        write_txt_file(folder_name, input_filename, data)
-        processed_data = data  
-        write_txt_file(folder_name, output_filename, processed_data)
     else:
         print(f"Failed to fetch data: {response.status_code}")
 
@@ -50,8 +38,21 @@ def write_txt_file(folder_name, filename, data):
         file.write(data)
         print(f"Text data saved to {file_path}")
 
+# Process Data - text 
+def process_txt_file(folder_name, input_filename, output_filename):
+    # Fetch the data
+    txt_url = 'https://www.gutenberg.org/ebooks/1112.txt.utf-8'
+    response = requests.get(txt_url)
+    
+    if response.status_code == 200:
+        data = response.text
+        write_txt_file(folder_name, input_filename, data)
+        processed_data = data  
+        write_txt_file(folder_name, output_filename, processed_data)
+    else:
+        print(f"Failed to fetch data: {response.status_code}")
 
-#function to fetch and write csv data
+# Data acquisition - CSV data
 def fetch_and_write_csv_data(folder_name, filename, url):
     response = requests.get(url)
     if response.status_code == 200:
@@ -59,21 +60,7 @@ def fetch_and_write_csv_data(folder_name, filename, url):
     else:
         print(f"Failed to fetch data: {response.status_code}")
 
-#function to process the csv file creating results_csv file
-def process_csv_file(csv_folder_name, input_filename, output_filename):
-    # Fetch the data
-    csv_url = 'https://raw.githubusercontent.com/FoamyGuy/CSVListExample/master/assets/states.csv'
-    response = requests.get(csv_url)
-    
-    if response.status_code == 200:
-        data = response.text
-        write_csv_file(csv_folder_name, input_filename, data)
-        processed_data = data 
-        write_csv_file(csv_folder_name, output_filename, processed_data)
-    else:
-        print(f"Failed to fetch data: {response.status_code}")
-
-#Function created to call and write data.csv file
+# Write Data - CSV 
 def write_csv_file(folder_name, filename, data):
     file_path = Path(folder_name).joinpath(filename)  # use pathlib to join paths
 
@@ -88,7 +75,7 @@ def write_csv_file(folder_name, filename, data):
         csv_writer.writerows(csv_data)
         print(f"CSV data saved to {file_path}")
 
-#function to manipulate the csv data in this example, transforming to a row vs. 1 charac line straight down
+# function to manipulate the csv data in this example, transforming to a row vs. 1 charac line straight down
 def parse_csv_data(csv_text):
     csv_data = []
     csv_reader = csv.reader(StringIO(csv_text))
@@ -96,7 +83,21 @@ def parse_csv_data(csv_text):
         csv_data.append(row)
     return csv_data
 
-#function to fetch and write excel file
+# Process the data - CSV
+def process_csv_file(csv_folder_name, input_filename, output_filename):
+    # Fetch the data
+    csv_url = 'https://raw.githubusercontent.com/FoamyGuy/CSVListExample/master/assets/states.csv'
+    response = requests.get(csv_url)
+    
+    if response.status_code == 200:
+        data = response.text
+        write_csv_file(csv_folder_name, input_filename, data)
+        processed_data = data 
+        write_csv_file(csv_folder_name, output_filename, processed_data)
+    else:
+        print(f"Failed to fetch data: {response.status_code}")
+
+# Data acquisition - excel data
 def fetch_and_write_excel_data(folder_name, filename, url):
     response = requests.get(url)
     if response.status_code == 200:
@@ -104,22 +105,7 @@ def fetch_and_write_excel_data(folder_name, filename, url):
     else:
         print(f"Failed to fetch Excel data: {response.status_code}")
 
-
-# Function to process the Excel file creating results_excel file
-def process_excel_file(excel_folder_name, input_filename, output_filename):
-    # Fetch the data
-    excel_url = 'https://github.com/bharathirajatut/sample-excel-dataset/raw/master/cattle.xls'
-    response = requests.get(excel_url)
-    
-    if response.status_code == 200:
-        data = response.content
-        write_excel_file(excel_folder_name, input_filename, data)
-        write_excel_file(excel_folder_name, output_filename, data)
-       
-    else:
-        print(f"Failed to fetch data: {response.status_code}")
-
-# Function created to call and write excel file
+# Write Data - Excel
 def write_excel_file(folder_name, filename, data):
     file_path = Path(folder_name).joinpath(filename)  # use pathlib to join paths
 
@@ -130,7 +116,30 @@ def write_excel_file(folder_name, filename, data):
         file.write(data)
         print(f"Excel data saved to {file_path}")
 
-#function to fetch and write json file
+# Process data - Excels
+def process_excel_file(excel_folder_name, input_filename, output_filename):
+    # Fetch the data
+    excel_url = 'https://github.com/bharathirajatut/sample-excel-dataset/raw/master/cattle.xls'
+    response = requests.get(excel_url)
+    
+    if response.status_code == 200:
+        data = response.content
+        write_excel_file(excel_folder_name, input_filename, data)
+
+        # Use pandas to read Excel data directly from binary data
+        excel_data = pd.read_excel(io.BytesIO(data), sheet_name='Sheet1')  # Update 'Sheet1' to the actual sheet name
+
+        # Convert the read Excel data to CSV format
+        processed_data = excel_data.to_csv(index=False)
+        
+        # Write the processed data to a CSV file
+        csv_output_filename = output_filename.replace('.xls', '.csv')
+        write_csv_file(excel_folder_name, csv_output_filename, processed_data)
+        
+    else:
+        print(f"Failed to fetch data: {response.status_code}")
+    
+# Data acquisition - JSON data
 def fetch_and_write_json_data(folder_name, filename, url):
     response = requests.get(url)
     if response.status_code == 200:
@@ -138,7 +147,18 @@ def fetch_and_write_json_data(folder_name, filename, url):
     else:
         print(f"Failed to fetch json data: {response.status_code}")
 
-# Function to process the json file creating results_json file
+# Write data - JSON
+def write_json_file(folder_name, filename, data):
+    file_path = Path(folder_name).joinpath(filename)  # use pathlib to join paths
+
+    # Create the folder if it doesn't exist
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with file_path.open('wb') as file:
+        file.write(data)
+        print(f"Binary data saved to {file_path}")
+
+# Process data - JSON
 def process_json_file(json_folder_name, input_filename, output_filename):
     # Fetch the data
     json_url = 'https://dog.ceo/api/breeds/image/random'
@@ -151,17 +171,6 @@ def process_json_file(json_folder_name, input_filename, output_filename):
        
     else:
         print(f"Failed to fetch data: {response.status_code}")
-
-# Function created to call and write text json creating json file
-def write_json_file(folder_name, filename, data):
-    file_path = Path(folder_name).joinpath(filename)  # use pathlib to join paths
-
-    # Create the folder if it doesn't exist
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-
-    with file_path.open('wb') as file:
-        file.write(data)
-        print(f"Binary data saved to {file_path}")
 
 # Exception reporting
 def fetch_txt_data(folder_name, url):

@@ -1,6 +1,8 @@
 # datafun-03-analytics
 #Project 3 repository
 
+## Start a new project repository in GitHub and then clone down to local machine. I leveraged VS Code clone functionality
+
 ## Create Virtual Environment
 
 ```shell
